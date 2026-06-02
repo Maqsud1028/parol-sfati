@@ -69,3 +69,36 @@ int PasswordChecker::ApplyLeetSpeakPenalties(
 
     return penalty;
 }
+
+bool PasswordChecker::HasCommonPattern(String^ password)
+{
+    // 1. Ketma-ket raqamlar
+    if (Regex::IsMatch(password, "\\d{4,}"))
+        return true;
+    // 2. Sana naqshi
+    if (Regex::IsMatch(password,
+        "(0[1-9]|[12][0-9]|3[01])[.\\-/]?(0[1-9]|1[0-2])[.\\-/]?[0-9]{2,4}"))
+        return true;
+    // 3. Takrorlanuvchi belgilar
+    if (Regex::IsMatch(password, "(.+)\\1{2,}"))
+        return true;
+    // 4. Klaviatura qatori naqshlari
+    array<String^>^ keyboardRows = {
+        "qwerty", "asdfgh", "zxcvbn",
+        "qazwsx", "1qaz2wsx", "yuiop"
+    };
+    String^ lowerPass = password->ToLower();
+    for each (String^ row in keyboardRows)
+    {
+        if (lowerPass->Contains(row) ||
+            lowerPass->Contains(
+                gcnew String(System::Linq::Enumerable::Reverse(
+                    row->ToCharArray())->ToArray())))
+            return true;
+    }
+    // 5. So'z + raqam (oxirda faqat raqamlar)
+    if (Regex::IsMatch(password, "^[a-zA-Z]{3,}\\d{1,4}$"))
+        return true;
+    return false;
+}
+
